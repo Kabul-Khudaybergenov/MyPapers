@@ -1,0 +1,416 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{newunicodechar}
+  \newunicodechar{á}{\'a}
+  \newunicodechar{ó}{\'o}
+  \newunicodechar{ú}{\'u}
+  \newunicodechar{ı}{\i}
+  \newunicodechar{ń}{\'n}
+  \newunicodechar{ś}{\'s}
+  \newunicodechar{ǵ}{\'g}
+\else
+  \usepackage{fontspec}
+  \setmainfont{Latin Modern Roman}
+\fi
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{xcolor}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+\newcommand{\todoresult}{\textit{TBD}}
+
+\title{Whisper Fine-Tuning for a Low-Resource Karakalpak Language Speech Recognition System}
+\author{Nietbay Uteuliev \and Avazjan Marakhimov \and Jabbarbergen Kudaybergenov \and Tangirbergen Kudaybergenov \and Alpamis Kutlimuratov \and Kabul Khudaybergenov}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Karakalpak still has very limited supervised speech data, which makes reliable automatic speech recognition (ASR) difficult to build in practice. Although Whisper performs well in many multilingual settings, its direct output is not yet dependable enough for Karakalpak transcription, where spelling, morphology, and special Latin letters must be handled carefully. This paper adapts the experimental organization of recent Whisper fine-tuning research to the Karakalpak Speech Corpus, a public speech-to-text dataset prepared by the authors. We describe a complete fine-tuning framework for Karakalpak ASR, including vanilla fine-tuning, layer-selective fine-tuning, and parameter-efficient adaptation with additional modules. The work is intended to provide a reproducible baseline for Karakalpak speech recognition and to support future speech technology for education, public services, and digital language preservation.
+\end{abstract}
+
+\noindent\textbf{Keywords} Whisper; Fine-tuning; Low-resource; Karakalpak; Automatic speech recognition
+
+\section{Introduction}
+
+Automatic speech recognition (ASR) converts spoken language into written text using computational models \cite{prabhavalkar2023survey}. For high-resource languages, ASR is already common in dictation, subtitling, voice search, call-center analytics, assistive technology, and human-computer interaction. The situation is very different for many other languages. Speaker communities may need the same digital tools, but the transcribed speech needed to train robust systems is often missing, fragmented, or unavailable to researchers \cite{yadav2022survey,aldarmaki2022unsupervised}.
+
+Karakalpak is a Turkic language spoken mainly in Karakalpakstan and neighboring regions. Its Latin orthography contains letters such as \textit{á}, \textit{ó}, \textit{ú}, \textit{ı}, \textit{ń}, \textit{ś}, and \textit{ǵ}, and an ASR system must preserve these symbols rather than silently replace them with simpler Latin characters. The language also brings familiar low-resource difficulties: rich morphology, regional pronunciation variation, occasional code-switching with Uzbek or Russian, and inconsistent text normalization in digital sources. These conditions make Karakalpak a useful case for studying how far a strong multilingual pretrained model can be adapted with a focused speech corpus.
+
+Large-scale speech models have changed what is feasible for low-resource ASR. OpenAI's Whisper is a weakly supervised encoder-decoder speech model trained for multilingual recognition, speech translation, language identification, and related speech-processing tasks \cite{radford2023robust}. Since Whisper already contains broad acoustic and linguistic knowledge, fine-tuning it on verified Karakalpak speech is a more practical starting point than training a recognizer from scratch. Even so, the model should not be treated as ready-made for Karakalpak: its spelling, phonology, and word forms still need target-language adaptation.
+
+Previous studies show that Whisper fine-tuning can improve ASR for low-resource languages, and Liu et al. \cite{liu2024exploration} provide a useful comparison of vanilla fine-tuning, layer-specific fine-tuning, and parameter-efficient strategies. We bring that framework to Karakalpak. The experimental basis is the Karakalpak Speech Corpus \cite{uteuliev2026karakalpak}, which contains WAV recordings, manually verified transcriptions, and speaker-independent splits for training, validation, and testing. Because the corpus was prepared by the authors, the work can also control important details such as orthographic normalization and split design.
+
+The main contributions of this paper are threefold. First, it describes a Whisper fine-tuning framework for Karakalpak ASR using a public corpus created by the authors. Second, it highlights preprocessing, evaluation, and error-analysis needs that are specific to Karakalpak. Third, it keeps a comparative design for vanilla, layer-selective, and parameter-efficient fine-tuning so that future measured results can be reported in a form that is easy to compare with the reference Whisper fine-tuning study.
+
+\section{Related works}
+
+Recent ASR research has moved steadily from task-specific neural architectures toward large pretrained speech foundation models. Conformer, which combines convolutional locality with Transformer attention, remains a strong building block for end-to-end recognition \cite{gulati2020conformer}. Self-supervised models such as wav2vec 2.0, HuBERT, and WavLM showed that useful speech representations can be learned from unlabeled audio and then adapted with limited transcribed data \cite{baevski2020wav2vec2,hsu2021hubert,chen2022wavlm}. Cross-lingual scaling extended this idea through XLS-R and multilingual benchmarks such as FLEURS, making low-resource ASR evaluation more systematic across language families \cite{babu2022xlsr,conneau2022fleurs}. At the same time, OpenASR21 showed that constrained-data recognition remains difficult even with strong transfer learning and augmentation \cite{peterson2022openasr21}.
+
+Large multilingual speech models are especially relevant for Karakalpak ASR. Whisper established a weakly supervised multilingual encoder-decoder model trained for recognition and translation at large scale \cite{radford2023robust}. MMS expanded speech technology coverage to more than one thousand languages, while Google USM explored large-scale multilingual pretraining beyond one hundred languages \cite{pratap2023mms,zhang2023usm}. Open Whisper-style Speech Model (OWSM) studies reproduced and extended Whisper-like training with public toolkits and data, and later work introduced faster or more transparent variants such as OWSM-CTC and OWSM v3.2 \cite{peng2023owsm,peng2024owsmctc,tian2024heterogeneous}. Distil-Whisper showed that knowledge distillation can reduce inference cost while preserving much of Whisper's robustness \cite{gandhi2023distilwhisper}. Together, these studies suggest that Karakalpak ASR should be judged not only by accuracy, but also by reproducibility, inference speed, and deployment cost.
+
+Fine-tuning strategy matters greatly for low-resource languages because full model updates can overfit small corpora or damage previously learned multilingual behavior. Parameter-efficient methods such as LoRA and unified adapter-style tuning reduce the number of trainable parameters while keeping the base model mostly intact \cite{hu2021lora,he2022unified}. Whisper-specific studies have compared vanilla fine-tuning, frozen-layer fine-tuning, adapter tuning, and LoRA-style methods for low-resource ASR \cite{liu2024exploration}. Work on adding new languages to ASR foundation models also emphasizes the trade-off between target-language improvement and catastrophic forgetting \cite{qian2024learn}. LoRA-based multilingual Whisper adaptation further shows that a model can be expanded without full retraining \cite{xu2024rehearsal,song2024lora}. These findings motivate our comparison of full, selective, and additional-module fine-tuning for Karakalpak.
+
+Recent application studies confirm that Whisper adaptation is useful across low-resource and domain-specific conditions. Multistage fine-tuning has been explored for languages such as Malasar, and long-form corpus generation has been proposed for real-world Swiss German applications \cite{pillai2024multistage,timmel2024swiss}. Studies on Amharic, dysarthric speech, and autism spectrum disorder speech show that dataset composition, normalization, curriculum learning, and LoRA variants can strongly affect WER and CER \cite{gete2025amharic,tan2025cba,park2025asd}. Fieldwork-oriented ASR research also shows that extremely small corpora require careful model choice and linguistically grounded error analysis \cite{liang2025fieldwork}. A 2026 Garo ASR case study highlights the continuing need for community-centered low-resource speech systems \cite{nyalang2026garo}. The Karakalpak Speech Corpus extends this line of work by providing a public, author-curated dataset with speaker-independent splits and standardized Karakalpak Latin orthography \cite{uteuliev2026karakalpak}.
+
+\section{Material and method}
+
+\subsection{Whisper}
+
+Whisper is an encoder-decoder Transformer model developed by OpenAI for robust multilingual speech processing \cite{radford2023robust}. It receives log-Mel spectrogram features and autoregressively predicts text tokens, while task and language information can be provided through special decoder prompts. This design is useful for Karakalpak because the encoder can reuse acoustic representations learned from multilingual speech, while the decoder can be guided toward Karakalpak spelling conventions and word segmentation.
+
+The Whisper family contains several model sizes, ranging from Tiny to Large. Table~\ref{tab:whisper-family} summarizes the architecture sizes commonly used in Whisper experiments. The reference fine-tuning study selected Large-v2 as the main baseline because it provides strong multilingual ASR capability while still leaving room to observe the effect of fine-tuning \cite{liu2024exploration}. We follow the same choice for Karakalpak when hardware allows it; smaller models can later be evaluated for deployment on limited-resource devices.
+
+\begin{table}[H]
+\centering
+\caption{Architecture details of the Whisper model family.}
+\label{tab:whisper-family}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Layers & Width & Heads & Parameters \\
+\midrule
+Tiny & 4 & 384 & 6 & 39M \\
+Base & 6 & 512 & 8 & 74M \\
+Small & 12 & 768 & 12 & 244M \\
+Medium & 24 & 1024 & 16 & 769M \\
+Large & 32 & 1280 & 20 & 1150M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For Karakalpak ASR, Whisper's main advantage is not only its size but also its ability to transfer speech representations across languages. The main risk is that a general multilingual tokenizer and decoder may normalize, omit, or substitute Karakalpak-specific letters if the model is not fine-tuned on clean target-language transcriptions. For this reason, the fine-tuning pipeline must preserve the official Latin orthography and evaluate both word-level and character-level errors.
+
+In the proposed system, Whisper is used for speech-to-text transcription, not speech translation. All audio is converted to Whisper's expected sampling rate, segmented so that each training example corresponds to one utterance, and transformed into log-Mel features by the standard Whisper frontend. During decoding, the task prompt is fixed to transcription, and language prompting is kept consistent across experiments. This keeps WER and CER changes tied to model adaptation rather than prompt variation. The point is important for Karakalpak because unstable prompting may encourage the decoder to produce text in a neighboring or higher-resource language.
+
+\subsection{Fine-tuning}
+
+Fine-tuning adapts pretrained model parameters to a target task using far less supervised data than full pretraining would require. In this work, the target task is direct speech-to-text recognition in standard Karakalpak Latin orthography. Compared with building a recognizer from randomly initialized parameters, fine-tuning Whisper reduces the data requirement and gives the model a much stronger starting point.
+
+Three practical challenges remain. First, full fine-tuning of a large Whisper model requires substantial memory, training time, and careful learning-rate control. Second, a limited corpus can lead to overfitting, especially when the same speaker, text domain, or recording condition appears too often during training. Third, full adaptation may reduce the model's original multilingual generalization, a problem usually described as catastrophic forgetting. These challenges are especially important for Karakalpak because future applications may need to work across age groups, regions, microphones, and speaking styles.
+
+Before fine-tuning, the transcriptions are normalized with a text pipeline designed for Karakalpak. The procedure removes non-speech markup, repeated spaces, hidden Unicode artifacts, and characters outside the approved orthographic inventory, while preserving the special letters á, ó, ú, ı, ń, ś, and ǵ. Punctuation is handled consistently across reference and hypothesis text so that evaluation does not reward or penalize formatting decisions unrelated to speech recognition. The normalization step is deliberately conservative: it does not rewrite valid Karakalpak word forms or collapse special letters into their base Latin equivalents, because doing so would hide exactly the errors that a practical Karakalpak ASR system must avoid.
+
+The training protocol uses speaker-independent partitions for training, validation, and testing. Model parameters are updated only on the training split, the validation split is used for learning-rate and checkpoint selection, and the test split is reserved for final reporting. For every fine-tuning strategy, the same audio preprocessing, text normalization, decoding options, and WER/CER scripts are used. This makes the comparison between vanilla fine-tuning, layer-selective fine-tuning, adapters, and LoRA meaningful: differences in recognition quality can be attributed to the adaptation strategy rather than to changes in data handling or scoring.
+
+To address these issues, the paper studies three categories of fine-tuning. Vanilla fine-tuning updates the full model and estimates the maximum gain available from supervised Karakalpak data. Fine-tuning with specific parameters freezes or reinitializes selected encoder layers to test which parts of Whisper matter most for Karakalpak adaptation. Fine-tuning with additional modules inserts lightweight trainable layers, such as bottleneck adapters or low-rank adaptation modules, while keeping most original Whisper parameters frozen.
+
+\section{Experiments and analysis}
+
+\subsection{Data and baseline}
+
+The experiments use the Karakalpak Speech Corpus \cite{uteuliev2026karakalpak}. The corpus is described as the first large-scale public speech-to-text dataset for Karakalpak and contains 16 kHz, 16-bit PCM WAV recordings paired with manually verified transcriptions in standard Karakalpak Latin orthography. The recordings cover read speech, conversational and narrative sentences, phonetically rich word sequences, numbers, commands, and daily expressions. Speaker-independent train, validation, and test splits reduce speaker leakage and provide a more realistic estimate of ASR generalization.
+
+\begin{table}[H]
+\centering
+\caption{Detailed statistics and design properties of the Karakalpak data applied in this paper.}
+\label{tab:data}
+\begin{tabular}{p{0.24\linewidth}p{0.66\linewidth}}
+\toprule
+Item & Description \\
+\midrule
+Language & Karakalpak, a low-resource Turkic language \\
+Corpus & Karakalpak Speech Corpus, version 2, DOI: 10.17632/2th8jvft8f.2 \\
+Audio format & WAV, 16 kHz, 16-bit PCM \\
+Transcription & Manually verified standard Karakalpak Latin orthography \\
+Special letters & á, ó, ú, ı, ń, ś, ǵ \\
+Split design & Speaker-independent training, validation, and testing partitions \\
+Speech content & Read speech, narratives, commands, numbers, daily expressions, and phonetically rich material \\
+Rows/duration & \todoresult{} after final corpus manifest export \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:baseline-family} reports the planned baseline Whisper evaluation on Karakalpak. Unlike the multilingual table in the reference study, this paper focuses on one target language across several Whisper model sizes. The pretrained model (PT) is evaluated without Karakalpak fine-tuning, and the same held-out test set is used for every model. Word error rate (WER) is the primary metric, while character error rate (CER) is also needed because Karakalpak-specific letters can be confused even when a word remains visually similar.
+
+The baseline experiment has two roles. First, it shows how much Karakalpak knowledge is already present in Whisper before target-language adaptation. If the pretrained system has high WER but moderate CER, the model may capture parts of the acoustic signal while failing to assemble valid Karakalpak word forms. If both WER and CER are high, the problem is likely deeper, involving phonetic as well as orthographic mismatch. Second, the baseline helps choose a model size for fine-tuning. Larger models usually provide stronger multilingual transfer, but the gain may not scale neatly with parameter count when the target language is weakly represented or when the training corpus is moderate in size.
+
+For Karakalpak, baseline errors need to be inspected beyond aggregate scores. Common error types include replacing the letters á, ó, ú, ı, ń, ś, and ǵ with their unmarked Latin counterparts, deleting suffixes in morphologically rich words, splitting one agglutinative word into several fragments, or producing Uzbek, Kazakh, Russian, or generic Latin-script text when the acoustic evidence is uncertain. These errors are useful diagnostics because they show whether fine-tuning mainly needs to teach the decoder Karakalpak spelling, the encoder Karakalpak phonetic contrasts, or both.
+
+\begin{table}[H]
+\centering
+\caption{WERs and CERs of Whisper model sizes on Karakalpak before fine-tuning. PT denotes pretrained zero-shot or prompt-based evaluation.}
+\label{tab:baseline-family}
+\begin{tabular}{lrrr}
+\toprule
+Model & Parameters & WER (\%) & CER (\%) \\
+\midrule
+Tiny PT & 39M & \todoresult{} & \todoresult{} \\
+Base PT & 74M & \todoresult{} & \todoresult{} \\
+Small PT & 244M & \todoresult{} & \todoresult{} \\
+Medium PT & 769M & \todoresult{} & \todoresult{} \\
+Large-v2 PT & 1150M & \todoresult{} & \todoresult{} \\
+Large-v3 PT & 1550M & \todoresult{} & \todoresult{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Vanilla fine-tuning}
+
+The first fine-tuning experiment asks a simple question: how much can supervised Karakalpak data improve Whisper? All model parameters are updated using the training partition of the Karakalpak Speech Corpus, validation data are used for checkpoint selection, and the final score is reported only on the held-out test set. Before training, transcriptions are lower-cased where appropriate, non-Karakalpak symbols are removed, hidden Unicode artifacts are normalized, and the letters \textit{á}, \textit{ó}, \textit{ú}, \textit{ı}, \textit{ń}, \textit{ś}, and \textit{ǵ} are preserved.
+
+\begin{table}[H]
+\centering
+\caption{Karakalpak ASR performance before (PT) and after vanilla fine-tuning (FT).}
+\label{tab:pt-ft}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Trainable parameters & Training time & WER (\%) & CER (\%) \\
+\midrule
+Large-v2 PT & 1.15B & -- & \todoresult{} & \todoresult{} \\
+Large-v2 FT & 1.15B & \todoresult{} & \todoresult{} & \todoresult{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:pt-ft} compares the pretrained and fine-tuned systems. The expected outcome is a clear reduction in both WER and CER because the model learns Karakalpak spelling, frequent morphemes, and local pronunciation patterns from supervised examples. Error analysis should separately count substitutions among special letters, word-boundary errors, omitted short function words, and substitutions caused by Russian or Uzbek loanword pronunciation. These categories are more useful for improving a Karakalpak system than a single aggregate WER value.
+
+Vanilla fine-tuning should be interpreted through both accuracy and stability. A large WER reduction with a smaller CER reduction would suggest that the model learned word-level lexical patterns but still confuses individual Karakalpak characters. Conversely, a strong CER reduction with remaining WER errors may mean that spellings are mostly correct while segmentation, suffix attachment, or short function words still need improvement. Validation curves should also be checked for overfitting: if training loss continues to decrease while validation WER increases, the model is memorizing speakers or sentence forms rather than learning robust Karakalpak recognition.
+
+Domain coverage is another important point. The Karakalpak Speech Corpus includes read, narrative, conversational, command, number, and daily-expression material, but these styles may not contribute equally to the final error rate. Read sentences can improve clean orthographic modeling, while conversational and command utterances are more important for practical systems. After the main FT result is obtained, the test set should therefore be analyzed by utterance type, duration, speaker group, and presence of special letters. This analysis can show whether future data collection should prioritize spontaneous speech, regional accents, short commands, or phonetically rich minimal contrasts.
+
+\subsection{Fine-tuning with specific parameters}
+
+We use layer-selective fine-tuning to identify which Whisper encoder layers matter most for Karakalpak adaptation. In multilingual speech encoders, lower layers often represent general acoustic features, intermediate layers mix phonetic and lexical information, and upper layers become more task- and language-specific. If the lower layers already encode reusable speech properties, freezing them may reduce training cost while preserving, or even improving, generalization.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/Fig_1.jpg}
+\caption{Similarities of encoder layer-wise representations by CKA in Karakalpak before and after fine-tuning.}
+\label{fig:cka}
+\end{figure}
+
+Figure~\ref{fig:cka} shows centered kernel alignment (CKA) similarity between encoder representations before and after Karakalpak fine-tuning. High similarity in the bottom layers would indicate that the model reuses general acoustic representations, while stronger changes in the upper layers would suggest adaptation to language-specific phonology and orthography. This analysis is useful for Karakalpak because it helps separate universal acoustic transfer from target-language spelling adaptation.
+
+For Karakalpak, the CKA trend should be read together with the linguistic error categories. If upper-layer changes are large and the main baseline errors are orthographic, adaptation is likely concentrated in mapping shared acoustic representations to Karakalpak-specific text. If middle layers change strongly, the model may be learning phonetic contrasts that were not well represented during pretraining. A relatively flat CKA curve would be unexpected in a successful fine-tuning run and may indicate that the learning rate is too low, the number of updates is insufficient, or the model is constrained too strongly by frozen parameters.
+
+The next experiment freezes the bottom $n$ encoder layers and updates the remaining encoder and decoder parameters. The number of frozen layers is varied to identify the best balance between efficiency and accuracy. If performance remains stable while many bottom layers are frozen, the system can be trained with fewer updates and lower risk of overfitting.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/Fig_2.jpg}
+\caption{WERs and CERs for different numbers of frozen bottom layers for Karakalpak.}
+\label{fig:freeze}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Karakalpak ASR performance for vanilla fine-tuning (FT), bottom-layer freezing fine-tuning (FFT), and top-layer reinitialization fine-tuning (RIFT). The number after ``/'' denotes the selected number of layers.}
+\label{tab:specific}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Layer setting & Trainable parameters & WER (\%) & CER (\%) \\
+\midrule
+FT & all layers & 1.15B & \todoresult{} & \todoresult{} \\
+FFT & \todoresult{} / $n$ frozen & \todoresult{} & \todoresult{} & \todoresult{} \\
+RIFT & \todoresult{} / $m$ reinitialized & \todoresult{} & \todoresult{} & \todoresult{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Top-layer reinitialization tests a different hypothesis: that the pretrained upper encoder layers may not provide a good starting point for Karakalpak and could benefit from random reinitialization. In this setup, the top $m$ layers are reinitialized and trained while lower layers are kept fixed. If RIFT performs worse than FT, the conclusion is that Whisper's pretrained upper layers still provide useful structure for Karakalpak and should not be discarded.
+
+The frozen-layer experiment is useful for deciding how much of Whisper must change for a deployable Karakalpak recognizer. If FFT matches or improves FT with fewer trainable layers, the lower encoder can be treated as a reusable acoustic feature extractor. This would reduce GPU memory requirements and may help when updating the model with future Karakalpak data. However, if freezing too many layers increases CER on special letters, Karakalpak phonetic details may require adaptation deeper in the encoder than expected.
+
+RIFT is a stricter test. Reinitializing upper layers removes pretrained multilingual structure and forces the model to relearn high-level speech representations from the Karakalpak corpus alone. If performance degrades quickly as $m$ increases, even imperfect pretrained layers are more valuable than random initialization in low-resource ASR. If a small amount of reinitialization improves performance, the result would suggest a mismatch between Whisper's upper layers and Karakalpak orthography; in that case, a hybrid strategy such as partial reinitialization plus a lower decoder learning rate should be studied.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/Fig_3.jpg}
+\caption{WERs and CERs for different numbers of reinitialized top layers for Karakalpak.}
+\label{fig:reinit}
+\end{figure}
+
+\subsection{Fine-tuning with additional modules}
+
+Full fine-tuning and layer-specific fine-tuning still require many parameter updates when Large-v2 is used. For practical Karakalpak ASR, parameter-efficient fine-tuning is attractive because it can reduce memory use, shorten training time, and preserve more of Whisper's original multilingual ability. Therefore, this paper includes bottleneck adapter fine-tuning (BAFT) and low-rank adaptation fine-tuning (LoRAFT) as additional-module strategies.
+
+Bottleneck adapters are inserted after selected Transformer blocks. The adapter first normalizes the hidden representation, projects it into a smaller dimension, applies a nonlinear activation, projects it back to the original dimension, and adds the result through a residual connection. During training, only adapter parameters are updated while the original Whisper parameters remain frozen.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{figures/Fig_4.jpg}
+\caption{Schematic diagram of inserting an adapter into Whisper.}
+\label{fig:adapter}
+\end{figure}
+
+The adapter bottleneck dimension $d$ controls the trade-off between capacity and efficiency. A very small $d$ may not capture Karakalpak-specific orthographic and phonological features, while a very large $d$ may reduce the efficiency advantage. Therefore, $d$ should be selected on the validation set before final test evaluation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\linewidth]{figures/Fig_5.jpg}
+\caption{WER and CER of different values of $d$ for Karakalpak.}
+\label{fig:bottleneck}
+\end{figure}
+
+For LoRAFT, low-rank matrices are attached to selected attention projections. This strategy updates only a small number of trainable parameters and is useful when GPU memory is limited. The rank and scaling factor should be selected using validation performance, and the final comparison should report both recognition quality and training efficiency.
+
+The additional-module experiments should be read as an engineering trade-off, not only as a search for the lowest WER. Full fine-tuning may produce the strongest result, but it updates the entire Large-v2 model and is expensive to repeat when the corpus grows. BAFT and LoRAFT are more attractive when training must be done on modest hardware, when several dialectal or domain-specific Karakalpak variants must be maintained, or when Whisper's original multilingual ability should be preserved for mixed-language utterances.
+
+\begin{table}[H]
+\centering
+\caption{Karakalpak ASR performance tested by PT, FT, BAFT, LoRAFT, and BAFT-T. ``Paras'' and ``Time'' represent trainable parameters and average training time, respectively.}
+\label{tab:additional}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Paras & Time & WER (\%) & CER (\%) \\
+\midrule
+PT & 1.15B & -- & \todoresult{} & \todoresult{} \\
+FT & 1.15B & \todoresult{} & \todoresult{} & \todoresult{} \\
+BAFT & \todoresult{} & \todoresult{} & \todoresult{} & \todoresult{} \\
+LoRAFT & \todoresult{} & \todoresult{} & \todoresult{} & \todoresult{} \\
+BAFT-T & \todoresult{} & \todoresult{} & \todoresult{} / $p$ & \todoresult{} / $p$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Finally, BAFT-T inserts adapters only into the top $p$ encoder layers while keeping adapters in the decoder. This setting tests whether Karakalpak adaptation is concentrated in higher-level speech representations. If BAFT-T approaches full BAFT performance with fewer trainable parameters, it becomes a strong engineering candidate for a deployable Karakalpak ASR system.
+
+In the final comparison, PT, FT, BAFT, LoRAFT, and BAFT-T should be discussed using four criteria: WER, CER, trainable parameters, and training time. A model with slightly higher WER but much lower training cost can still be preferable for practical Karakalpak ASR if it preserves special-letter accuracy and can be updated frequently. The comparison should also report whether errors concentrate in the same linguistic categories across methods. For example, if LoRAFT reduces WER but continues to confuse á and a, its parameter efficiency comes with an orthographic weakness; if BAFT-T preserves special letters while missing long agglutinative words, language-modeling capacity rather than acoustic modeling may be the remaining bottleneck.
+
+Overall, the experiments move from broad transfer to targeted adaptation. The baseline measures what Whisper already knows, FT measures the maximum benefit of supervised Karakalpak data, FFT and RIFT identify which parts of the encoder should be trusted, and BAFT/LoRAFT/BAFT-T test whether similar gains can be achieved with fewer trainable parameters. This layered analysis matters because the final system must be accurate, reproducible, and maintainable as more Karakalpak speech data becomes available.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/Fig_6.jpg}
+\caption{WERs and CERs of BAFT for only top encoder layers.}
+\label{fig:baft-top}
+\end{figure}
+
+\section{Conclusions}
+
+Multilingual and multitask speech models provide a practical path for low-resource ASR, but Karakalpak still needs target-language fine-tuning. This paper presents a Whisper fine-tuning framework for the Karakalpak Speech Corpus, covering data preparation, baseline evaluation, vanilla fine-tuning, layer-selective fine-tuning, and parameter-efficient adaptation. The framework preserves Karakalpak Latin orthography, evaluates both WER and CER, and treats special letters and morphology as central parts of error analysis.
+
+The next stage is to fill the reserved tables and figures with measured results from reproducible experiments. Once those results are inserted, the comparison between FT, FFT, RIFT, BAFT, LoRAFT, and BAFT-T will show which strategy offers the best balance between recognition accuracy and training efficiency for Karakalpak ASR. That balance is important for building practical speech recognition tools and for supporting the digital development of the Karakalpak language.
+
+\section*{Acknowledgements}
+Not applicable.
+
+\section*{Authors' contributions}
+NU, JK, TK, and KK contributed to the dataset preparation, experimental design, manuscript drafting, and review. All authors read and approved the final manuscript.
+
+\section*{Funding}
+Not applicable.
+
+\section*{Availability of data and materials}
+The Karakalpak Speech Corpus used in this study is publicly available from Mendeley Data, version 2, DOI: \href{https://doi.org/10.17632/2th8jvft8f.2}{10.17632/2th8jvft8f.2}.
+
+\section*{Declarations}
+
+\subsection*{Competing interests}
+The authors declare that they have no competing interests.
+
+\begin{thebibliography}{31}
+
+\bibitem{yadav2022survey}
+H. Yadav and S. Sitaram, ``A survey of multilingual models for automatic speech recognition,'' arXiv:2202.12576, 2022.
+
+\bibitem{aldarmaki2022unsupervised}
+H. Aldarmaki, A. Ullah, S. Ram, and N. Zaki, ``Unsupervised automatic speech recognition: A review,'' \textit{Speech Communication}, vol. 139, pp. 76--91, 2022.
+
+\bibitem{prabhavalkar2023survey}
+R. Prabhavalkar, T. Hori, T. N. Sainath, R. Schluter, and S. Watanabe, ``End-to-end speech recognition: A survey,'' \textit{IEEE/ACM Transactions on Audio, Speech, and Language Processing}, vol. 32, pp. 325--351, 2023.
+
+\bibitem{gulati2020conformer}
+A. Gulati et al., ``Conformer: Convolution-augmented Transformer for speech recognition,'' in \textit{Proc. Interspeech 2020}, 2020, pp. 5036--5040.
+
+\bibitem{baevski2020wav2vec2}
+A. Baevski, Y. Zhou, A. Mohamed, and M. Auli, ``wav2vec 2.0: A framework for self-supervised learning of speech representations,'' in \textit{Advances in Neural Information Processing Systems}, vol. 33, 2020, pp. 12449--12460.
+
+\bibitem{hsu2021hubert}
+W.-N. Hsu et al., ``HuBERT: Self-supervised speech representation learning by masked prediction of hidden units,'' \textit{IEEE/ACM Transactions on Audio, Speech, and Language Processing}, vol. 29, pp. 3451--3460, 2021.
+
+\bibitem{chen2022wavlm}
+S. Chen et al., ``WavLM: Large-scale self-supervised pre-training for full stack speech processing,'' \textit{IEEE Journal of Selected Topics in Signal Processing}, vol. 16, no. 6, pp. 1505--1518, 2022.
+
+\bibitem{babu2022xlsr}
+A. Babu et al., ``XLS-R: Self-supervised cross-lingual speech representation learning at scale,'' in \textit{Proc. Interspeech 2022}, 2022, pp. 2278--2282.
+
+\bibitem{conneau2022fleurs}
+A. Conneau et al., ``FLEURS: Few-shot learning evaluation of universal representations of speech,'' in \textit{Proc. IEEE Spoken Language Technology Workshop}, 2022, pp. 798--805.
+
+\bibitem{peterson2022openasr21}
+K. Peterson, A. N. Tong, and J. Yu, ``OpenASR21: The second open challenge for automatic speech recognition of low-resource languages,'' in \textit{Proc. Interspeech 2022}, 2022, pp. 4895--4899.
+
+\bibitem{radford2023robust}
+A. Radford et al., ``Robust speech recognition via large-scale weak supervision,'' in \textit{Proceedings of the 40th International Conference on Machine Learning}, 2023, pp. 28492--28518.
+
+\bibitem{pratap2023mms}
+V. Pratap et al., ``Scaling speech technology to 1,000+ languages,'' arXiv:2305.13516, 2023.
+
+\bibitem{zhang2023usm}
+Y. Zhang et al., ``Google USM: Scaling automatic speech recognition beyond 100 languages,'' arXiv:2303.01037, 2023.
+
+\bibitem{peng2023owsm}
+Y. Peng et al., ``Reproducing Whisper-style training using an open-source toolkit and publicly available data,'' arXiv:2309.13876, 2023.
+
+\bibitem{gandhi2023distilwhisper}
+S. Gandhi, P. von Platen, and A. M. Rush, ``Distil-Whisper: Robust knowledge distillation via large-scale pseudo labelling,'' arXiv:2311.00430, 2023.
+
+\bibitem{hu2021lora}
+E. J. Hu et al., ``LoRA: Low-rank adaptation of large language models,'' arXiv:2106.09685, 2021.
+
+\bibitem{he2022unified}
+J. He, C. Zhou, X. Ma, T. Berg-Kirkpatrick, and G. Neubig, ``Towards a unified view of parameter-efficient transfer learning,'' in \textit{Proc. International Conference on Learning Representations}, 2022.
+
+\bibitem{liu2024exploration}
+Y. Liu, X. Yang, and D. Qu, ``Exploration of Whisper fine-tuning strategies for low-resource ASR,'' \textit{EURASIP Journal on Audio, Speech, and Music Processing}, vol. 2024, no. 29, 2024.
+
+\bibitem{qian2024learn}
+M. Qian, S. Tang, R. Ma, K. M. Knill, and M. J. F. Gales, ``Learn and don't forget: Adding a new language to ASR foundation models,'' in \textit{Proc. Interspeech 2024}, 2024.
+
+\bibitem{xu2024rehearsal}
+T. Xu et al., ``Towards rehearsal-free multilingual ASR: A LoRA-based case study on Whisper,'' in \textit{Proc. Interspeech 2024}, 2024.
+
+\bibitem{song2024lora}
+Z. Song, J. Zhuo, Y. Yang, Z. Ma, S. Zhang, and X. Chen, ``LoRA-Whisper: Parameter-efficient and extensible multilingual ASR,'' arXiv:2406.06619, 2024.
+
+\bibitem{peng2024owsmctc}
+Y. Peng, Y. Sudo, M. Shakeel, and S. Watanabe, ``OWSM-CTC: An open encoder-only speech foundation model for speech recognition, translation, and language identification,'' in \textit{Proc. Annual Meeting of the Association for Computational Linguistics}, 2024.
+
+\bibitem{tian2024heterogeneous}
+J. Tian, Y. Peng, W. Chen, K. Choi, K. Livescu, and S. Watanabe, ``On the effects of heterogeneous data sources on speech-to-text foundation models,'' in \textit{Proc. Interspeech 2024}, 2024.
+
+\bibitem{pillai2024multistage}
+L. G. Pillai, K. Manohar, B. K. Raju, and E. Sherly, ``Multistage fine-tuning strategies for automatic speech recognition in low-resource languages,'' arXiv:2411.04573, 2024.
+
+\bibitem{timmel2024swiss}
+V. Timmel, C. Paonessa, R. Kakooee, M. Vogel, and D. Perruchoud, ``Fine-tuning Whisper on low-resource languages for real-world applications,'' arXiv:2412.15726, 2024.
+
+\bibitem{gete2025amharic}
+D. K. Gete et al., ``Whispering in Amharic: Fine-tuning Whisper for low-resource language,'' arXiv:2503.18485, 2025.
+
+\bibitem{tan2025cba}
+T. Tan et al., ``CBA-Whisper: Curriculum learning-based AdaLoRA fine-tuning on Whisper for low-resource dysarthric speech recognition,'' in \textit{Proc. Interspeech 2025}, 2025, pp. 3309--3313.
+
+\bibitem{park2025asd}
+Y. Park and B. Lee, ``Fine-tuning strategies for automatic speech recognition of low-resource speech with autism spectrum disorder,'' in \textit{Proc. Interspeech 2025}, 2025, pp. 1858--1862.
+
+\bibitem{liang2025fieldwork}
+S. Liang and G.-A. Levow, ``Breaking the transcription bottleneck: Fine-tuning ASR models for extremely low-resource fieldwork languages,'' arXiv:2506.17459, 2025.
+
+\bibitem{nyalang2026garo}
+B. Nyalang and K. B. C. Momin, ``Towards speech technology for Garo: A low-resource ASR system via multilingual transfer,'' Preprints.org, 2026.
+
+\bibitem{uteuliev2026karakalpak}
+N. Uteuliev, J. Kudaybergenov, T. Kudaybergenov, and K. Khudaybergenov, ``Karakalpak Speech Corpus,'' Mendeley Data, version 2, 2026. doi: \href{https://doi.org/10.17632/2th8jvft8f.2}{10.17632/2th8jvft8f.2}.
+
+\end{thebibliography}
+
+\end{document}
