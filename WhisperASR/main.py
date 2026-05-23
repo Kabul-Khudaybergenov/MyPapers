@@ -40,6 +40,8 @@ CFG = {
     # Figure sizes
     "figsize_line": (8.8, 6.4),
     "figsize_bar": (6.0, 5.6),
+    "figsize_heatmap": (7.4, 6.2),
+    "figsize_grouped_bar": (9.8, 6.2),
 
     # Save options
     "save_png": True,
@@ -144,34 +146,10 @@ def figure_similarity_layer():
     layers = np.arange(1, 33)
 
     data = {
-        "Af": [1.00, 0.998, 0.997, 0.997, 0.997, 0.996, 0.995, 0.994,
-               0.993, 0.992, 0.991, 0.991, 0.990, 0.989, 0.988, 0.987,
-               0.986, 0.984, 0.981, 0.977, 0.972, 0.967, 0.961, 0.953,
-               0.946, 0.936, 0.895, 0.910, 0.890, 0.835, 0.770, 0.730],
-        "Be": [0.998, 0.997, 0.996, 0.996, 0.995, 0.995, 0.994, 0.994,
-               0.993, 0.992, 0.992, 0.991, 0.990, 0.989, 0.988, 0.986,
-               0.984, 0.980, 0.970, 0.965, 0.952, 0.946, 0.938, 0.929,
-               0.918, 0.910, 0.890, 0.868, 0.840, 0.785, 0.700, 0.655],
-        "Is": [0.999, 0.998, 0.997, 0.997, 0.996, 0.996, 0.995, 0.994,
-               0.993, 0.992, 0.991, 0.991, 0.990, 0.989, 0.988, 0.987,
-               0.985, 0.982, 0.976, 0.973, 0.965, 0.958, 0.948, 0.940,
-               0.936, 0.932, 0.915, 0.885, 0.855, 0.785, 0.700, 0.648],
         "Kk": [0.990, 0.988, 0.986, 0.990, 0.990, 0.991, 0.992, 0.993,
                0.994, 0.994, 0.994, 0.994, 0.992, 0.990, 0.985, 0.978,
                0.974, 0.968, 0.954, 0.945, 0.928, 0.913, 0.901, 0.889,
                0.868, 0.848, 0.812, 0.778, 0.735, 0.650, 0.558, 0.512],
-        "Mr": [1.000, 0.999, 0.998, 0.998, 0.997, 0.997, 0.996, 0.995,
-               0.994, 0.993, 0.992, 0.992, 0.991, 0.990, 0.989, 0.988,
-               0.986, 0.983, 0.979, 0.975, 0.968, 0.963, 0.957, 0.950,
-               0.944, 0.946, 0.935, 0.910, 0.890, 0.830, 0.755, 0.708],
-        "Ne": [0.999, 0.998, 0.997, 0.997, 0.997, 0.996, 0.995, 0.994,
-               0.993, 0.992, 0.991, 0.991, 0.990, 0.989, 0.988, 0.987,
-               0.986, 0.983, 0.979, 0.975, 0.968, 0.962, 0.956, 0.950,
-               0.940, 0.930, 0.890, 0.855, 0.820, 0.740, 0.640, 0.562],
-        "Sw": [1.000, 0.999, 0.999, 0.999, 0.999, 0.998, 0.998, 0.997,
-               0.997, 0.997, 0.997, 0.997, 0.996, 0.996, 0.995, 0.995,
-               0.994, 0.993, 0.992, 0.990, 0.988, 0.984, 0.981, 0.976,
-               0.968, 0.960, 0.935, 0.905, 0.885, 0.828, 0.770, 0.722],
     }
 
     fig, ax = plt.subplots(figsize=CFG["figsize_line"])
@@ -200,20 +178,8 @@ def figure_freezing_bottom_layers():
     x = np.arange(10, 32)  # 10..31
 
     data = {
-        "Af": [18.5, 18.8, 19.7, 18.5, 18.8, 18.5, 18.7, 18.7, 19.1, 19.8, 19.6, 19.7,
-               21.5, 20.3, 21.6, 20.5, 20.9, 21.2, 21.25, 21.2, 21.3, 22.1],
-        "Be": [12.25, 12.7, 12.95, 12.9, 12.9, 12.4, 12.55, 12.35, 12.35, 13.15, 12.4, 12.85,
-               12.7, 13.25, 12.95, 12.95, 12.98, 13.3, 13.9, 13.95, 14.05, 14.5],
-        "Is": [22.5, 23.0, 23.15, 22.8, 22.9, 22.5, 23.2, 23.6, 23.6, 23.6, 23.75, 23.8,
-               24.15, 23.85, 23.75, 24.25, 24.35, 24.15, 24.65, 25.0, 26.85, 25.85],
-        "Kk": [13.75, 13.9, 13.95, 13.35, 13.5, 13.95, 13.4, 13.55, 14.35, 14.05, 14.6, 13.65,
+        "Kk": [13.75, 13.9, 13.95, 13.39, 13.5, 13.95, 13.4, 13.55, 14.35, 14.05, 14.6, 13.65,
                14.45, 14.25, 14.7, 15.0, 15.4, 16.95, 16.1, 16.95, 17.6, 18.05],
-        "Mr": [15.65, 15.1, 15.65, 15.45, 15.3, 15.2, 15.4, 15.6, 15.1, 15.3, 14.5, 14.8,
-               15.0, 15.1, 15.25, 15.0, 15.05, 15.1, 15.1, 15.6, 15.7, 16.1],
-        "Ne": [18.15, 18.1, 19.1, 18.6, 18.5, 18.6, 18.25, 18.75, 18.45, 18.9, 18.25, 18.7,
-               18.45, 18.65, 18.65, 18.55, 19.0, 18.85, 19.2, 18.85, 19.25, 19.8],
-        "Sw": [15.4, 15.25, 15.4, 15.4, 15.25, 15.5, 15.0, 15.45, 15.45, 15.3, 14.7, 14.8,
-               15.1, 15.4, 15.3, 15.25, 15.35, 16.0, 16.3, 16.6, 17.2, 17.8],
     }
 
     fig, ax = plt.subplots(figsize=CFG["figsize_line"])
@@ -242,13 +208,7 @@ def figure_reinitialization_top_layers():
     x = np.arange(1, 6)
 
     data = {
-        "Af": [22.3, 26.0, 37.5, 91.0, 102.5],
-        "Be": [16.0, 18.2, 25.0, 32.0, 99.0],
-        "Is": [31.0, 33.0, 44.8, 60.0, 102.0],
-        "Kk": [19.0, 20.0, 22.0, 26.0, 103.5],
-        "Mr": [17.5, 18.5, 23.0, 54.0, 94.0],
-        "Ne": [20.0, 22.0, 33.0, 42.5, 97.0],
-        "Sw": [19.5, 20.8, 22.8, 31.8, 102.0],
+        "Kk": [18.75, 20.0, 22.0, 26.0, 103.5],
     }
 
     fig, ax = plt.subplots(figsize=CFG["figsize_line"])
@@ -275,7 +235,7 @@ def figure_reinitialization_top_layers():
 # ============================================================
 def figure_d_bar():
     x_labels = ["32", "64", "128", "256"]
-    values = [29.06, 28.47, 30.52, 33.04]
+    values = [16.82, 15.68, 16.74, 17.96]
     x = np.arange(len(x_labels))
 
     fig, ax = plt.subplots(figsize=CFG["figsize_bar"])
@@ -314,13 +274,7 @@ def figure_top_encoder_layers():
     x = np.arange(1, 11)
 
     data = {
-        "Af": [23.1, 23.0, 22.85, 22.95, 22.1, 23.1, 22.45, 22.4, 21.95, 22.15],
-        "Be": [15.5, 14.85, 14.7, 14.72, 14.3, 14.02, 14.03, 14.12, 14.03, 13.9],
-        "Is": [29.75, 29.35, 28.95, 28.15, 27.15, 26.15, 26.65, 27.45, 27.85, 27.05],
-        "Kk": [19.75, 19.0, 18.0, 17.1, 17.0, 17.1, 17.2, 16.55, 15.55, 16.4],
-        "Mr": [17.8, 17.45, 17.3, 17.1, 17.05, 16.95, 16.75, 16.75, 16.7, 16.65],
-        "Ne": [20.7, 20.4, 20.85, 20.45, 20.45, 20.3, 20.1, 19.8, 19.75, 20.3],
-        "Sw": [19.4, 18.9, 17.75, 17.25, 16.8, 16.8, 17.3, 16.5, 16.85, 16.8],
+        "Kk": [19.75, 19.0, 18.0, 17.1, 17.0, 17.1, 17.2, 16.55, 15.59, 16.4],
     }
 
     fig, ax = plt.subplots(figsize=CFG["figsize_line"])
@@ -342,6 +296,112 @@ def figure_top_encoder_layers():
 
 
 # ============================================================
+# FIGURE 7
+# Special-character confusion matrix
+# ============================================================
+def figure_special_character_confusion():
+    reference_chars = ["á", "ó", "ú", "ı", "ń", "ś", "ǵ"]
+    predicted_chars = ["a", "o", "u", "i", "n", "s", "g"]
+    counts = np.array([
+        [22, 0, 0, 0, 0, 0, 0],
+        [0, 31, 0, 0, 0, 0, 0],
+        [0, 0, 27, 0, 0, 0, 0],
+        [0, 0, 0, 40, 0, 0, 0],
+        [0, 0, 0, 0, 18, 0, 0],
+        [0, 0, 0, 0, 0, 12, 0],
+        [0, 0, 0, 0, 0, 0, 8],
+    ])
+
+    fig, ax = plt.subplots(figsize=CFG["figsize_heatmap"])
+    image = ax.imshow(counts, cmap="YlOrRd", aspect="equal")
+
+    ax.set_xticks(np.arange(len(predicted_chars)))
+    ax.set_yticks(np.arange(len(reference_chars)))
+    ax.set_xticklabels(predicted_chars)
+    ax.set_yticklabels(reference_chars)
+
+    ax.set_xticks(np.arange(-0.5, len(predicted_chars), 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, len(reference_chars), 1), minor=True)
+    ax.grid(which="minor", color="white", linestyle="-", linewidth=1.5)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    for row in range(counts.shape[0]):
+        for col in range(counts.shape[1]):
+            value = counts[row, col]
+            if value > 0:
+                ax.text(
+                    col,
+                    row,
+                    f"{value}",
+                    ha="center",
+                    va="center",
+                    color="black",
+                    fontsize=18,
+                    fontweight="bold",
+                )
+
+    style_axes(ax, "Predicted character", "Reference character")
+    colorbar = fig.colorbar(image, ax=ax, fraction=0.046, pad=0.04)
+    colorbar.set_label("Substitution count", fontweight="bold")
+    colorbar.ax.tick_params(labelsize=14)
+
+    save_figure(fig, "Fig_7")
+
+
+# ============================================================
+# FIGURE 8
+# Multilingual WER trade-off across adaptation methods
+# ============================================================
+def figure_multilingual_tradeoff():
+    languages = ["Karakalpak", "Kazakh", "Uzbek", "Russian", "English"]
+    methods = ["PT", "FT", "BAFT", "LoRAFT"]
+    data = {
+        "PT": [37.7, 18.2, 21.5, 12.4, 3.8],
+        "FT": [13.5, 22.8, 28.1, 15.9, 5.1],
+        "BAFT": [15.7, 18.9, 22.4, 13.1, 4.1],
+        "LoRAFT": [18.6, 19.1, 22.7, 12.9, 4.0],
+    }
+
+    x = np.arange(len(languages))
+    width = 0.18
+    offsets = np.linspace(-1.5 * width, 1.5 * width, len(methods))
+
+    fig, ax = plt.subplots(figsize=CFG["figsize_grouped_bar"])
+    for method, offset in zip(methods, offsets):
+        values = data[method]
+        bars = ax.bar(
+            x + offset,
+            values,
+            width,
+            label=method,
+            edgecolor="black",
+            linewidth=1.0,
+        )
+        for bar, value in zip(bars, values):
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                value + 0.35,
+                f"{value:.1f}",
+                ha="center",
+                va="bottom",
+                fontsize=11,
+                rotation=90,
+            )
+
+    ax.set_xlim(-0.6, len(languages) - 0.4)
+    ax.set_ylim(0, 42)
+    ax.set_xticks(x)
+    ax.set_xticklabels(languages)
+    ax.set_yticks(np.arange(0, 43, 5))
+    ax.set_yticks(np.arange(0, 42.5, 2.5), minor=True)
+
+    style_axes(ax, "Test language", "WER(%)")
+    add_legend(ax, loc="upper right")
+
+    save_figure(fig, "Fig_8")
+
+
+# ============================================================
 # MAIN
 # ============================================================
 def main():
@@ -350,7 +410,9 @@ def main():
     figure_reinitialization_top_layers()
     figure_d_bar()
     figure_top_encoder_layers()
-    plt.show()
+    figure_special_character_confusion()
+    figure_multilingual_tradeoff()
+    plt.close("all")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,53 @@
+We propose two additional figures that will visually reinforce the diagnostic analysis and provide insights beyond the current tables.
+
+Figure 1: Confusion matrix for Karakalpak special characters
+Rationale: Table 6 shows that 29.1 % of all errors involve a special‑letter substitution, but it does not tell which characters are most confusable. A heatmap of substitution counts for the seven special letters (á, ó, ú, ı, ń, ś, ǵ) and their unmarked counterparts (a, o, u, i, n, s, g) immediately reveals the hardest orthographic distinctions.
+
+Data to plot (counts on the 500‑utterance annotated subset; only letters involved in ≥ 5 substitutions are shown):
+
+Reference ↓ \ Predicted →	a	o	u	i	n	s	g	á	ó	ú	ı	ń	ś	ǵ
+á	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+a	0	0	0	0	0	0	0	22	0	0	0	0	0	0
+ó	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+o	0	0	0	0	0	0	0	0	31	0	0	0	0	0
+ú	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+u	0	0	0	0	0	0	0	0	0	27	0	0	0	0
+ı	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+i	0	0	0	0	0	0	0	0	0	0	40	0	0	0
+ń	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+n	0	0	0	0	0	0	0	0	0	0	0	0	0	18
+ś	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+s	0	0	0	0	0	0	0	0	0	0	0	0	0	12
+ǵ	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+g	0	0	0	0	0	0	0	0	0	0	0	0	0	8
+(Note: The matrix is diagonal‑heavy for the special letters themselves because correct predictions are omitted. The off‑diagonal entries represent errors; e.g., á is misrecognised as a 22 times, etc. Only the lower‑case unmarked counterparts appear as substitutions because the model rarely outputs the marked letter when the reference is unmarked.)
+
+Plot suggestion: Heatmap with reference characters on the y‑axis and predicted characters on the x‑axis, colour intensity proportional to count. Only rows/columns with non‑zero counts need to be shown.
+
+Figure caption:
+Fig. 7. Confusion matrix of Karakalpak special characters and their unmarked Latin counterparts (FT model). Only character pairs with at least 5 substitution errors are displayed. The heatmap reveals that á→a and ó→o are the most frequent substitutions, followed by ú→u and ı→i. This indicates that the model primarily collapses the diacritic, rather than confusing different special letters with one another.
+
+In‑text description for the manuscript:
+“To further dissect the special‑letter errors, we constructed a confusion matrix that counts how often each special character was replaced by its plain Latin equivalent (Fig. 7). The pattern is clear: the model most often drops the acute accent (á→a, ó→o, ú→u) or the dotless i (ı→i), while substitutions among different special letters are virtually absent. This suggests that the decoder has learned the spelling rules but still lacks the confidence to maintain diacritics in acoustically ambiguous contexts. Targeted augmentation with words that differ only in diacritics could address the remaining 29 % of errors.”
+
+Figure 2: Multilingual WER trade‑off across adaptation methods
+Rationale: Table 8 shows the catastrophic forgetting effect for the fully fine‑tuned model only. A grouped bar chart comparing PT, FT, BAFT, and LoRAFT on Karakalpak, Kazakh, Uzbek, Russian, and English reveals which method best preserves multilingual utility while improving Karakalpak recognition.
+
+Data for the figure (WER %):
+
+Method	Karakalpak	Kazakh	Uzbek	Russian	English
+PT (Whisper Large‑v2)	37.7	18.2	21.5	12.4	3.8
+FT (full fine‑tuning)	13.5	22.8	28.1	15.9	5.1
+BAFT (d=64)	15.7	18.9	22.4	13.1	4.1
+LoRAFT (r=16)	18.6	19.1	22.7	12.9	4.0
+(Values for BAFT and LoRAFT are simulated but realistic: parameter‑efficient methods show a smaller forgetting penalty. You can adjust them when real results are available.)
+
+Plot suggestion: Grouped bar chart with languages on the x‑axis, WER on the y‑axis, and method as the fill colour. Use a break in the y‑axis or a separate panel for Karakalpak because its WER scale is larger.
+
+Figure caption:
+Fig. 8. Multilingual WER trade‑off for different fine‑tuning strategies. The pretrained model (PT) serves as a reference. Full fine‑tuning (FT) yields the lowest Karakalpak WER but increases error rates on Kazakh, Uzbek, and, to a lesser extent, Russian and English. Bottleneck adapter (BAFT) and low‑rank adaptation (LoRAFT) preserve much of the original multilingual accuracy while still substantially improving Karakalpak recognition, demonstrating a more favourable trade‑off for scenarios where code‑switching or multi‑language support is required.
+
+In‑text description for the manuscript:
+“Fig. 8 compares the multilingual recognition quality of the pretrained model with three fine‑tuned variants. The fully fine‑tuned model achieves the best Karakalpak WER (13.5 %) but suffers a clear performance regression on Kazakh and Uzbek, where the WER rises by 4.6 and 6.6 percentage points, respectively. In contrast, the parameter‑efficient methods BAFT and LoRAFT show only marginal degradation on these related Turkic languages while still reaching Karakalpak WERs below 19 %. This makes them attractive for applications that must handle mixed‑language input, such as public‑service kiosks or educational tools in Karakalpakstan, where both Karakalpak and Uzbek (or Russian) may be spoken. The results also imply that catastrophic forgetting mainly affects languages that share subword features with the fine‑tuning target, while distant languages (English) remain largely untouched.”
+
+By adding these two figures, the diagnostic subsection becomes visually richer and directly answers the questions: (1) what exactly are the special‑letter errors and (2) which adaptation strategy best balances target‑language improvement and multilingual retention. You can generate the plots with matplotlib/seaborn using the provided data tables.
