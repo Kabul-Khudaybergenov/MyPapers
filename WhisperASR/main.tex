@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 
 \usepackage[a4paper,margin=1in]{geometry}
+
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[utf8]{inputenc}
@@ -128,13 +129,13 @@ The experiments use the Karakalpak Speech Corpus \cite{uteuliev2026karakalpak}. 
 Item & Description \\
 \midrule
 Language & Karakalpak language, a low-resource Turkic language \\
-Corpus & Karakalpak Speech Corpus, version 2, DOI: 10.17632/2th8jvft8f.2 \\
+Corpus & Karakalpak Speech Corpus, version 2 \cite{uteuliev2026karakalpak} \\
 Audio format & WAV, 16 kHz, 16-bit PCM \\
 Transcription & Manually verified standard Karakalpak Latin orthography \\
 Special letters & á, ó, ú, ı, ń, ś, ǵ \\
 Split design & Speaker-independent training, validation, and testing partitions \\
 Speech content & Read speech, narratives, commands, numbers, daily expressions, and phonetically rich material \\
-Rows/duration & 18,420 utterances / 24.6 h \\
+Rows/duration & 18,420 utterances / 50.6 h \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -311,10 +312,10 @@ Karakalpak orthography, with seven special Latin characters, rich agglutination,
 \toprule
 Error type & Count & Share (\%) \\
 \midrule
-Special-letter substitution (e.g., Ã¡ $\rightarrow$ a, Ã³ $\rightarrow$ o, Å„ $\rightarrow$ n) & 341 & 29.1 \\
-Suffix deletion or truncation (e.g., -lar $\rightarrow$ -la, -Çµa omitted) & 274 & 23.4 \\
+Special-letter substitution (e.g., \textit{á} $\rightarrow$  \textit{a}, \textit{ó} $\rightarrow$ \textit{o}, \textit{ń} $\rightarrow$ \textit{n}) & 341 & 29.1 \\
+Suffix deletion or truncation (e.g., \textit{-lar} $\rightarrow$ \textit{-la}, \textit{r} omitted) & 274 & 23.4 \\
 Word-boundary error (split agglutinative word or merge) & 126 & 10.8 \\
-Function-word omission (da, de, bir, menen) & 110 & 9.4 \\
+Function-word omission (\textit{da, de, bir, menen}) & 110 & 9.4 \\
 Spurious foreign-script insertion (Cyrillic, Uzbek/Russian) & 47 & 4.0 \\
 Other (acoustic confusions, numbers, homophones) & 273 & 23.3 \\
 \midrule
@@ -323,7 +324,7 @@ Total & 1171 & 100.0 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:error-breakdown} shows that more than 29\% of the errors still involve a special character being replaced by its unmarked Latin counterpart, even after fine-tuning. This confirms that the model has not fully internalized the Karakalpak graphemic inventory, despite a CER of 5.42\%. A single special-letter substitution may also have a large WER impact because the resulting word string often no longer matches the reference. Suffix deletions, which account for 23.4\% of errors, directly reflect the morphological complexity of Karakalpak: many suffixes are short and acoustically reduced, making them prone to omission. Word-boundary errors are typical of agglutinative languages and indicate that the decoder occasionally segments a single morphologically complex word into two tokens, as in \textit{baramÄ±z} $\rightarrow$ \textit{bara mÄ±z}, or merges a function word with a content word. The relatively low rate of foreign-script insertion, 4.0\%, suggests that the model has largely learned to suppress non-Karakalpak output, although a residual tendency to generate Cyrillic or neighboring Turkic forms remains when acoustic confidence is low. These diagnostic categories point to concrete improvement strategies, including targeted data augmentation for special characters, a suffix-aware language model, or a morphological post-correction module.
+Table~\ref{tab:error-breakdown} shows that more than 29\% of the errors still involve a special character being replaced by its unmarked Latin counterpart, even after fine-tuning. This confirms that the model has not fully internalized the Karakalpak graphemic inventory, despite a CER of 5.42\%. A single special-letter substitution may also have a large WER impact because the resulting word string often no longer matches the reference. Suffix deletions, which account for 23.4\% of errors, directly reflect the morphological complexity of Karakalpak: many suffixes are short and acoustically reduced, making them prone to omission. Word-boundary errors are typical of agglutinative languages and indicate that the decoder occasionally segments a single morphologically complex word into two tokens, as in \textit{baramız} $\rightarrow$ \textit{bara mız}, or merges a function word with a content word. The relatively low rate of foreign-script insertion, 4.0\%, suggests that the model has largely learned to suppress non-Karakalpak output, although a residual tendency to generate Cyrillic or neighboring Turkic forms remains when acoustic confidence is low. These diagnostic categories point to concrete improvement strategies, including targeted data augmentation for special characters, a suffix-aware language model, or a morphological post-correction module.
 
 \begin{figure}[H]
 \centering
@@ -430,9 +431,11 @@ The results show that full fine-tuning gives the strongest overall recognition a
 The authors gratefully acknowledge support from research grants of the Republic of Uzbekistan (Grants: IL-5421101773 and AL-11925119801).
 
 \section*{Authors' contributions}
-N.U., J.K., T.K., and K.K. conceptualized the study and designed the research framework. N.U., J.K., and T.K. collected and prepared the Karakalpak Speech Corpus. K.K. designed the experimental methodology, supervised the model training process, and coordinated the research. A.M. contributed to the development of the speech processing and data preparation pipeline. A.K. and K.K. performed the experiments, analyzed the results, and prepared the figures and tables. K.K. wrote the main manuscript text. N.U., J.K., T.K., A.M., A.K., and K.K. reviewed and edited the manuscript. All authors approved the final version of the manuscript.
+N.U., J.K., and K.K. conceptualized the study and designed the research framework. N.U., J.K., T.K. and K.K. collected and prepared the Karakalpak Speech Corpus. K.K. designed the experimental methodology, supervised the model training process, and coordinated the research. A.M. contributed to the development of the speech processing and data preparation pipeline. J.K. and K.K. performed the experiments, analyzed the results, and prepared the figures and tables. J.K. and K.K. wrote the main manuscript text. N.U., A.M., and K.K. reviewed and edited the manuscript. All authors approved the final version of the manuscript.
 
 \section*{Funding}
+
+Not applicable.
 
 \section*{Availability of data and materials}
 The Karakalpak Speech Corpus analyzed in this study is publicly available through Mendeley Data, version 2, DOI: \href{https://doi.org/10.17632/2th8jvft8f.2}{10.17632/2th8jvft8f.2}.
