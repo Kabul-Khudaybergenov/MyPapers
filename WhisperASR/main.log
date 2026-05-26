@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.18)  26 MAY 2026 11:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.18)  26 MAY 2026 19:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -63,9 +63,6 @@ echar.sty
 Package: newunicodechar 2018/04/08 v1.2 Defining Unicode characters
 )
 
-Package newunicodechar Warning: Redefining Unicode character on input line 9.
-
-
 Package newunicodechar Warning: Redefining Unicode character on input line 10.
 
 
@@ -82,6 +79,9 @@ Package newunicodechar Warning: Redefining Unicode character on input line 14.
 
 
 Package newunicodechar Warning: Redefining Unicode character on input line 15.
+
+
+Package newunicodechar Warning: Redefining Unicode character on input line 16.
 
 (C:\Users\user\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
@@ -309,7 +309,7 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
 )
-Package hyperref Info: Option `colorlinks' set `true' on input line 33.
+Package hyperref Info: Option `colorlinks' set `true' on input line 34.
 
 (C:\Users\user\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdft
 ex.def
@@ -318,24 +318,24 @@ File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
 ) (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 39.
-LaTeX Font Info:    ... okay on input line 39.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 40.
+LaTeX Font Info:    ... okay on input line 40.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -397,7 +397,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 g
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring ON on input line 39.
+Package hyperref Info: Link coloring ON on input line 40.
  (main.out) (main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
@@ -405,62 +405,62 @@ Package hyperref Info: Link coloring ON on input line 39.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 42.
+(Font)              <12> on input line 43.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 42.
+(Font)              <8> on input line 43.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 42.
+(Font)              <6> on input line 43.
  [1
 
 {C:/Users/user/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 87.
+(Font)              <10.95> on input line 88.
  [3] [4] [5] [6]
 <Fig_1.png, id=197, 613.5723pt x 440.1243pt>
 File: Fig_1.png Graphic file (type png)
 <use Fig_1.png>
-Package pdftex.def Info: Fig_1.png  used on input line 196.
+Package pdftex.def Info: Fig_1.png  used on input line 197.
 (pdftex.def)             Requested size: 294.42636pt x 211.19681pt.
 <Fig_2.png, id=200, 613.8132pt x 440.1243pt>
 File: Fig_2.png Graphic file (type png)
 <use Fig_2.png>
-Package pdftex.def Info: Fig_2.png  used on input line 209.
+Package pdftex.def Info: Fig_2.png  used on input line 210.
 (pdftex.def)             Requested size: 294.42636pt x 211.12294pt.
  [7 <./Fig_1.png>]
 <Fig_3.png, id=209, 613.5723pt x 440.1243pt>
 File: Fig_3.png Graphic file (type png)
 <use Fig_3.png>
-Package pdftex.def Info: Fig_3.png  used on input line 237.
+Package pdftex.def Info: Fig_3.png  used on input line 238.
 (pdftex.def)             Requested size: 294.42636pt x 211.19681pt.
  [8 <./Fig_2.png>]
 <Fig_4.png, id=217, 873.76437pt x 480.79625pt>
 File: Fig_4.png Graphic file (type png)
 <use Fig_4.png>
-Package pdftex.def Info: Fig_4.png  used on input line 250.
+Package pdftex.def Info: Fig_4.png  used on input line 251.
 (pdftex.def)             Requested size: 362.37569pt x 199.402pt.
  [9 <./Fig_3.png> <./Fig_4.png>]
 <Fig_5.png, id=226, 410.9754pt x 382.0674pt>
 File: Fig_5.png Graphic file (type png)
 <use Fig_5.png>
-Package pdftex.def Info: Fig_5.png  used on input line 259.
+Package pdftex.def Info: Fig_5.png  used on input line 260.
 (pdftex.def)             Requested size: 249.13371pt x 231.60913pt.
  [10 <./Fig_5.png>]
 <Fig_6.png, id=235, 613.8132pt x 440.1243pt>
 File: Fig_6.png Graphic file (type png)
 <use Fig_6.png>
-Package pdftex.def Info: Fig_6.png  used on input line 293.
+Package pdftex.def Info: Fig_6.png  used on input line 294.
 (pdftex.def)             Requested size: 294.42636pt x 211.12294pt.
  [11 <./Fig_6.png>]
 <Fig_7.png, id=245, 492.8814pt x 425.6703pt>
 File: Fig_7.png Graphic file (type png)
 <use Fig_7.png>
-Package pdftex.def Info: Fig_7.png  used on input line 330.
+Package pdftex.def Info: Fig_7.png  used on input line 331.
 (pdftex.def)             Requested size: 271.7835pt x 234.72343pt.
  [12 <./Fig_7.png>] [13]
 <Fig_8.png, id=263, 685.8423pt x 425.6703pt>
 File: Fig_8.png Graphic file (type png)
 <use Fig_8.png>
-Package pdftex.def Info: Fig_8.png  used on input line 390.
+Package pdftex.def Info: Fig_8.png  used on input line 391.
 (pdftex.def)             Requested size: 371.43698pt x 230.54053pt.
  [14 <./Fig_8.png>] [15] [16] [17] [18] [19] (main.aux)
  ***********
@@ -491,7 +491,7 @@ fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1728.pk><C:/Users/user/AppData/Local/Pro
 grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/user/AppData/L
 ocal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/user/Ap
 pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on main.pdf (19 pages, 1300039 bytes).
+Output written on main.pdf (19 pages, 1300049 bytes).
 PDF statistics:
  726 PDF objects out of 1000 (max. 8388607)
  102 named destinations out of 1000 (max. 500000)
